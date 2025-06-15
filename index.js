@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -58,6 +58,17 @@ async function run() {
         });
 
         // tutorial Related APIs 
+
+        app.get('/tutorial', async (req, res) => {
+            const tutorial_id = req?.query?.tutorialId;
+            const query = {};
+            if(tutorial_id){
+                query._id = new ObjectId(tutorial_id)
+            }
+            console.log(query)
+            const result = await tutorialsCollections.find(query).toArray();
+            res.send(result);
+        })
         
         app.post('/tutorial', async (req, res) => {
             const tutorial_info = req.body;
