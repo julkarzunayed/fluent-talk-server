@@ -31,6 +31,7 @@ async function run() {
 
         const usersCollections = client.db('fluent_talk').collection('users');
         const tutorialsCollections = client.db('fluent_talk').collection('tutorials');
+        const tutorialBookingCollections = client.db('fluent_talk').collection('tutorialBookings');
 
 
         //users APIs
@@ -65,7 +66,6 @@ async function run() {
             if(tutorial_id){
                 query._id = new ObjectId(tutorial_id)
             }
-            console.log(query)
             const result = await tutorialsCollections.find(query).toArray();
             res.send(result);
         })
@@ -73,6 +73,14 @@ async function run() {
         app.post('/tutorial', async (req, res) => {
             const tutorial_info = req.body;
             const result = await tutorialsCollections.insertOne(tutorial_info);
+            res.send(result);
+        });
+
+
+        // tutorialBooking Related APIs
+        app.post('/tutorialBooking', async(req, res) => {
+            const tutorialBookingInfo = req.body;
+            const result = await tutorialBookingCollections.insertOne(tutorialBookingInfo);
             res.send(result);
         })
 
