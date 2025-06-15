@@ -50,6 +50,16 @@ async function run() {
             res.send(result);
         });
 
+        app.get('/user/:role', async (req, res) => {
+            const role = req.params.role;
+            // console.log(role)
+            const result = await usersCollections.countDocuments({role: role})
+            res.send(result);
+        });
+
+        // tutorial Related APIs 
+    
+
         
 
         // Send a ping to confirm a successful connection
