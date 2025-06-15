@@ -34,11 +34,23 @@ async function run() {
 
 
         //users APIs
-        app.post('/users', async (req, res) => {
+        app.post('/user', async (req, res) => {
             const userInfo = req.body;
             const result = await usersCollections.insertOne(userInfo);
             res.send(result)
-        })
+        });
+
+        app.get('/user', async (req, res) => {
+            const userEmail = req.query.email;
+            // console.log(userEmail);
+            const query = {
+                email : userEmail,
+            };
+            const result = await usersCollections.findOne(query);
+            res.send(result);
+        });
+
+        
 
         // Send a ping to confirm a successful connection
         // await client.db("admin").command({ ping: 1 });
