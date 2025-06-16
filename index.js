@@ -3,6 +3,11 @@ const cors = require('cors');
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
+//for Firebase Admin
+const admin = require("firebase-admin");
+const serviceAccount = require("./firebase-admin-serviceAccountKey.json");
+
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -11,7 +16,38 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+//firebase middleWare
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
+
+const verifyFirebaseToken = async (req, res, next) => {
+    const authToken = req?.headers?.authorization;
+    const token = authToken?.split('Bearer ')[1];
+
+    // console.log(token);
+    if(!authToken || !authToken?.startsWith('Bearer')){
+        return res.status(401).send({massage: 'unauthorized access'});
+    };
+
+    try{
+        const decoded = await admin.auth().verifyIdToken(token);
+        req.decoded = decoded;
+        next();
+    }
+    catch (error) {
+        return res.status(403).send({ massage: 'invalid access token'});
+    }
+
+}
+
+const verifyEmail = async (req, res, next) => {
+    if(req.query.email !== req.decoded.email){
+        return res.status(403).send({massage: 'unauthorized access'})
+    }
+    next()
+}
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.vpoctao.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -78,11 +114,20 @@ async function run() {
 
 
         // tutorialBooking Related APIs
+        app.get('/tutorialBooking', verifyFirebaseToken, verifyEmail,  async (req, res) => {
+            const email = req.query?.email;
+            const query = {
+                student_email: email
+            };
+            const result = await tutorialBookingCollections.find(query).toArray();
+            res.send(result);
+        })
+
         app.post('/tutorialBooking', async(req, res) => {
             const tutorialBookingInfo = req.body;
             const result = await tutorialBookingCollections.insertOne(tutorialBookingInfo);
             res.send(result);
-        })
+        });
 
         
 
