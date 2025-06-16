@@ -104,6 +104,15 @@ async function run() {
             }
             const result = await tutorialsCollections.find(query).toArray();
             res.send(result);
+        });
+
+        app.get('/tutorial/byTutorId', verifyFirebaseToken, verifyEmail, async (req,res) => {
+            const tutorEmail = req.query.email;
+            const query = {
+                tutorEmail,
+            };
+            const result = await tutorialsCollections.find(query).toArray();
+            res.send(result);
         })
         
         app.post('/tutorial', async (req, res) => {
