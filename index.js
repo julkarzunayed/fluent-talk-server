@@ -5,7 +5,8 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 //for Firebase Admin
 const admin = require("firebase-admin");
-const serviceAccount = require("./firebase-admin-serviceAccountKey.json");
+const decoded = Buffer.from(process.env.FB_SERVICE_KEY, 'base64').toString('utf8');
+const serviceAccount = JSON.parse(decoded);
 
 
 const app = express();
@@ -13,7 +14,15 @@ const port = process.env.PORT || 3000;
 
 
 //middlewares
-app.use(cors());
+app.use(
+    cors({
+        origin: [
+            "http://localhost:5173",
+            "https://fluent-talk-auth.web.app",
+            "https://fluent-talk-auth.firebaseapp.com"
+        ]
+    })
+);
 app.use(express.json());
 
 //firebase middleWare
@@ -64,7 +73,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
         const usersCollections = client.db('fluent_talk').collection('users');
         const tutorialsCollections = client.db('fluent_talk').collection('tutorials');
@@ -134,11 +143,17 @@ async function run() {
         // tutorial Related APIs 
 
         app.get('/tutorial', async (req, res) => {
-            const tutorial_id = req?.query?.tutorialId;
+            const {tutorial_id, search} = req?.query;
             const query = {};
             if (tutorial_id) {
                 query._id = new ObjectId(tutorial_id)
             }
+            if(search){
+                query.language = {
+                    $regex: search, $options: 'i'
+                };
+            }
+            console.log("search", search, query)
             const result = await tutorialsCollections.find(query).toArray();
             res.send(result);
         });
@@ -162,11 +177,18 @@ async function run() {
             const data = req?.body;
             const email = req.query?.email
             const tutorial_id = req.query?.tutorial_id
-            console.log(data);
+            console.log(data.review);
             const options = { upsert: true }
-            const updateDoc = { }
-            if (data.review) {
-                updateDoc.$push = { review : data.review }
+            const updateDoc = {}
+            if (data?.push) {
+                updateDoc.$push = {
+                    review: data.review
+                }
+            }
+            else if (data?.pull) {
+                updateDoc.$pull = {
+                    review: data.review
+                }
             }
             else {
                 updateDoc.$set = data
