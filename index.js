@@ -144,7 +144,7 @@ async function run() {
         });
 
         app.get('/tutorial/byTutorId', verifyFirebaseToken, verifyEmail, async (req, res) => {
-            const tutorEmail = req.query.email;
+            const tutorEmail = req.query?.email;
             const query = {
                 tutorEmail,
             };
@@ -157,6 +157,24 @@ async function run() {
             const result = await tutorialsCollections.insertOne(tutorial_info);
             res.send(result);
         });
+
+        app.patch('/tutorial', verifyFirebaseToken, verifyEmail, async (req, res) => {
+            const data = req?.body;
+            const email = req.query?.email
+            const tutorial_id = req.query?.tutorial_id
+            console.log(data);
+            const options = { upsert: true }
+            const updateDoc = { }
+            if (data.review) {
+                updateDoc.$push = { review : data.review }
+            }
+            else {
+                updateDoc.$set = data
+            }
+            const query = { _id: new ObjectId(tutorial_id) };
+            const result = await tutorialsCollections.updateOne(query, updateDoc, options);
+            res.send(result);
+        })
 
         app.delete('/tutorial', verifyFirebaseToken, verifyEmail, async (req, res) => {
             const email = req.query?.email;
@@ -192,7 +210,7 @@ async function run() {
             const query = {
                 _id: new ObjectId(data),
             }
-            console.log( 'From  teh tutor Booking:--', email, data);
+            console.log('From  teh tutor Booking:--', email, data);
             const result = await tutorialBookingCollections.deleteOne(query);
             res.send(result);
         })
