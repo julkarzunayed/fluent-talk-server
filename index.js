@@ -158,6 +158,17 @@ async function run() {
             res.send(result);
         });
 
+        app.delete('/tutorial', verifyFirebaseToken, verifyEmail, async (req, res) => {
+            const email = req.query?.email;
+            const tutorial_id = req.query?.tutorial_id;
+            const query = {
+                _id: new ObjectId(tutorial_id),
+            };
+            console.log(email, tutorial_id);
+            const result = await tutorialsCollections.deleteOne(query);
+            res.send(result);
+        })
+
 
         // tutorialBooking Related APIs
         app.get('/tutorialBooking', verifyFirebaseToken, verifyEmail, async (req, res) => {
