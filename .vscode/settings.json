@@ -1,0 +1,29 @@
+{
+    "editor.fontSize": 20,
+    "editor.minimap.enabled": true,
+    "terminal.integrated.fontSize": 19,
+    "terminal.integrated.fontWeightBold": "bold",
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "terminal.integrated.defaultProfile.windows": "Command Prompt",
+    "window.autoDetectColorScheme": true,
+    "workbench.preferredLightColorTheme": "Default Dark Modern",
+    "workbench.preferredHighContrastColorTheme": "Default Dark Modern",
+    "workbench.preferredHighContrastLightColorTheme": "Default Dark Modern",
+    "editor.tokenColorCustomizations": {},
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#192E03",
+        // Side Bar Borders
+        // "activityBar.border": "#ff0000",
+        // "sideBar.border": "#00ff00",
+        // Menu Bar Colors
+        "menu.background": "#192E03",
+        "menu.foreground": "#ffffff",
+        "menu.selectionBackground": "#000080",
+        // Status Bar Colors
+        "statusBar.background": "#192E03",
+        "statusBar.foreground": "#ffffff",
+        // Title Bar Colors
+        "titleBar.activeBackground": "#192E03",
+        "titleBar.activeForeground": "#7e7e7e"
+    }
+}

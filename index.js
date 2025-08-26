@@ -35,7 +35,7 @@ const verifyFirebaseToken = async (req, res, next) => {
     const authToken = req?.headers?.authorization;
     const token = authToken?.split('Bearer ')[1];
 
-    // console.log(token);
+
     if (!authToken || !authToken?.startsWith('Bearer')) {
         return res.status(401).send({ massage: 'unauthorized access' });
     };
@@ -52,7 +52,6 @@ const verifyFirebaseToken = async (req, res, next) => {
 }
 
 const verifyEmail = async (req, res, next) => {
-    console.log(req.query.email, req.decoded.email)
     if (req.query.email !== req.decoded.email) {
         return res.status(403).send({ massage: 'unauthorized access' })
     }
@@ -105,13 +104,20 @@ async function run() {
         //users APIs
         app.post('/user', async (req, res) => {
             const userInfo = req.body;
-            const result = await usersCollections.insertOne(userInfo);
-            res.send(result)
+            const isUserExist = await usersCollections.findOne({ email: userInfo.email })
+            if (isUserExist) {
+                return res.status(200).json({
+                    massage: 'user already exist and logged in successfully',
+                })
+            } else {
+                const result = await usersCollections.insertOne(userInfo);
+                res.send(result)
+            }
+
         });
 
         app.get('/user', async (req, res) => {
             const userEmail = req.query.email;
-            // console.log(userEmail);
             const query = {
                 email: userEmail,
             };
@@ -128,14 +134,12 @@ async function run() {
             const update = {
                 $set: updateDoc,
             }
-            console.log(query, req.body)
             const result = await usersCollections.updateOne(query, update);
             res.send(result);
         })
 
         app.get('/user/:role', async (req, res) => {
             const role = req.params.role;
-            // console.log(role)
             const result = await usersCollections.countDocuments({ role: role })
             res.send(result);
         });
@@ -143,17 +147,22 @@ async function run() {
         // tutorial Related APIs 
 
         app.get('/tutorial', async (req, res) => {
-            const {tutorial_id, search} = req?.query;
+            const { tutorial_id, search, tutorName } = req?.query;
             const query = {};
+            // console.log(tutorName)
             if (tutorial_id) {
                 query._id = new ObjectId(tutorial_id)
             }
-            if(search){
+            if (search) {
                 query.language = {
-                    $regex: search, $options: 'i'
+                    $regex: search, $options: 'i',
                 };
             }
-            console.log("search", search, query)
+            if (tutorName) {
+                query.tutorName = {
+                    $regex: tutorName, $options: 'i'
+                }
+            }
             const result = await tutorialsCollections.find(query).toArray();
             res.send(result);
         });
@@ -177,7 +186,6 @@ async function run() {
             const data = req?.body;
             const email = req.query?.email
             const tutorial_id = req.query?.tutorial_id
-            console.log(data.review);
             const options = { upsert: true }
             const updateDoc = {}
             if (data?.push) {
@@ -204,7 +212,6 @@ async function run() {
             const query = {
                 _id: new ObjectId(tutorial_id),
             };
-            console.log(email, tutorial_id);
             const result = await tutorialsCollections.deleteOne(query);
             res.send(result);
         })
@@ -212,10 +219,13 @@ async function run() {
 
         // tutorialBooking Related APIs
         app.get('/tutorialBooking', verifyFirebaseToken, verifyEmail, async (req, res) => {
-            const email = req.query?.email;
+            const { email, tutorial_id } = req.query;
             const query = {
                 student_email: email
             };
+            if (tutorial_id) {
+                query.tutorial_id = tutorial_id;
+            }
             const result = await tutorialBookingCollections.find(query).toArray();
             res.send(result);
         })
@@ -232,7 +242,6 @@ async function run() {
             const query = {
                 _id: new ObjectId(data),
             }
-            console.log('From  teh tutor Booking:--', email, data);
             const result = await tutorialBookingCollections.deleteOne(query);
             res.send(result);
         })
